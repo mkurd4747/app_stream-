@@ -5,8 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
-from tit_stream.database import get_session
-from tit_stream.database_api import app
+from tit_stream.database_api import app, get_session
 
 
 @pytest.fixture
@@ -25,11 +24,9 @@ def client() -> Generator[TestClient, None, None]:
 
     app.dependency_overrides[get_session] = override_get_session
 
-    test_client = TestClient(app)
+    with TestClient(app) as test_client:
+        yield test_client
 
-    yield test_client
-
-    test_client.close()
     app.dependency_overrides.clear()
     SQLModel.metadata.drop_all(test_engine)
 

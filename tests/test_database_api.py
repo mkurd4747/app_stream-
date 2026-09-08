@@ -141,21 +141,6 @@ def test_reject_invalid_event(
 def test_create_event_writes_log(
     client: TestClient,
     valid_event_data: dict[str, object],
-    caplog: object,
-) -> None:
-    with caplog.at_level(logging.INFO):  # type: ignore[attr-defined]
-        response = client.post(
-            "/events",
-            json=valid_event_data,
-        )
-
-    assert response.status_code == 201
-    assert "Created event" in caplog.text  # type: ignore[attr-defined]
-
-
-def test_create_event_writes_log(
-    client: TestClient,
-    valid_event_data: dict[str, object],
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     with caplog.at_level(logging.INFO):
@@ -166,3 +151,12 @@ def test_create_event_writes_log(
 
     assert response.status_code == 201
     assert "Created event" in caplog.text
+
+
+def test_health_check(
+    client: TestClient,
+) -> None:
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "healthy"}

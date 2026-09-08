@@ -14,6 +14,8 @@ from tit_stream.schemas import (
     TelemetryEventUpdate,
 )
 
+app = FastAPI()
+
 configure_logging()
 
 logger = logging.getLogger(__name__)
@@ -169,3 +171,8 @@ def delete_event(
     return {
         "message": "Event deleted successfully",
     }
+
+
+@app.get("/health", tags=["Health"])
+def health_check() -> dict[str, str]:
+    return {"status": "healthy"}
