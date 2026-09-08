@@ -13,5 +13,7 @@ end
 telemetry.db
 htmlcov/
 *.pyc
-
+.env
+.env.*
+!.env.example
 

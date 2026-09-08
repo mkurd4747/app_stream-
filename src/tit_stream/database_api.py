@@ -5,10 +5,25 @@ from time import perf_counter
 from typing import Annotated
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    status,
+)
+from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    Counter,
+    Histogram,
+    generate_latest,
+)
 from sqlalchemy import text
 from sqlmodel import Session, select
 
+from tit_stream.config import get_settings
 from tit_stream.database import create_database, get_session
 from tit_stream.database_models import TelemetryEventRecord
 from tit_stream.logging_config import configure_logging
@@ -21,6 +36,18 @@ configure_logging()
 
 logger = logging.getLogger(__name__)
 
+REQUEST_COUNT = Counter(
+    "tit_stream_http_requests_total",
+    "Total number of HTTP requests",
+    ["method", "path", "status_code"],
+)
+
+REQUEST_DURATION = Histogram(
+    "tit_stream_http_request_duration_seconds",
+    "HTTP request duration in seconds",
+    ["method", "path"],
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -28,9 +55,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
 
 
+settings = get_settings()
 app = FastAPI(
-    title="Persistent Telemetry Stream API",
-    version="2.0.0",
+    title=settings.app_name,
+    version=settings.app_version,
     lifespan=lifespan,
 )
 
@@ -50,9 +78,21 @@ async def log_requests(
 
     response = await call_next(request)
 
-    duration_ms = (perf_counter() - start_time) * 1000
+    duration_seconds = perf_counter() - start_time
+    duration_ms = duration_seconds * 1000
 
     response.headers["X-Request-ID"] = request_id
+
+    REQUEST_COUNT.labels(
+        method=request.method,
+        path=request.url.path,
+        status_code=str(response.status_code),
+    ).inc()
+
+    REQUEST_DURATION.labels(
+        method=request.method,
+        path=request.url.path,
+    ).observe(duration_seconds)
 
     logger.info(
         "Request completed method=%s path=%s status_code=%s duration_ms=%.2f request_id=%s",
@@ -88,6 +128,45 @@ def read_root() -> dict[str, str]:
     }
 
 
+@app.get("/health", tags=["Health"])
+def health_check() -> dict[str, str]:
+    return {
+        "status": "healthy",
+    }
+
+
+@app.get("/ready", tags=["Health"])
+def readiness_check(
+    session: SessionDependency,
+) -> dict[str, str]:
+    try:
+        session.connection().execute(text("SELECT 1"))
+    except Exception as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database unavailable",
+        ) from error
+
+    return {
+        "status": "ready",
+        "database": "connected",
+    }
+
+
+@app.get(
+    "/metrics",
+    tags=["Monitoring"],
+    include_in_schema=False,
+)
+def metrics() -> Response:
+    return Response(
+        content=generate_latest(),
+        headers={
+            "Content-Type": CONTENT_TYPE_LATEST,
+        },
+    )
+
+
 @app.post(
     "/events",
     response_model=TelemetryEventRecord,
@@ -104,6 +183,7 @@ def create_event(
     session.add(event)
     session.commit()
     session.refresh(event)
+
     logger.info(
         "Created event id=%s source=%s",
         event.id,
@@ -128,13 +208,19 @@ def read_events(
     statement = select(TelemetryEventRecord)
 
     if source is not None:
-        statement = statement.where(TelemetryEventRecord.source == source)
+        statement = statement.where(
+            TelemetryEventRecord.source == source,
+        )
 
     if classification is not None:
-        statement = statement.where(TelemetryEventRecord.classification == classification)
+        statement = statement.where(
+            TelemetryEventRecord.classification == classification,
+        )
 
     if flagged is not None:
-        statement = statement.where(TelemetryEventRecord.flagged == flagged)
+        statement = statement.where(
+            TelemetryEventRecord.flagged == flagged,
+        )
 
     statement = statement.offset(offset).limit(limit)
 
@@ -171,6 +257,7 @@ def update_event(
     session.add(event)
     session.commit()
     session.refresh(event)
+
     logger.info(
         "Updated event id=%s",
         event.id,
@@ -198,29 +285,11 @@ def delete_event(
     session.delete(event)
     session.commit()
 
+    logger.info(
+        "Deleted event id=%s",
+        event_id,
+    )
+
     return {
         "message": "Event deleted successfully",
-    }
-
-
-@app.get("/health", tags=["Health"])
-def health_check() -> dict[str, str]:
-    return {"status": "healthy"}
-
-
-@app.get("/ready", tags=["Health"])
-def readiness_check(
-    session: Session = Depends(get_session),
-) -> dict[str, str]:
-    try:
-        session.connection().execute(text("SELECT 1"))
-    except Exception as error:
-        raise HTTPException(
-            status_code=503,
-            detail="Database unavailable",
-        ) from error
-
-    return {
-        "status": "ready",
-        "database": "connected",
     }
