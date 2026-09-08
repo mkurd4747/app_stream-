@@ -214,3 +214,27 @@ def test_request_is_logged(
     assert "path=/health" in caplog.text
     assert "status_code=200" in caplog.text
     assert "request_id=logging-test-123" in caplog.text
+
+
+def test_metrics_endpoint(
+    client: TestClient,
+) -> None:
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "text/plain" in response.headers["content-type"]
+    assert "tit_stream_http_requests_total" in response.text
+    assert "tit_stream_http_request_duration_seconds" in response.text
+
+
+def test_health_request_is_recorded_in_metrics(
+    client: TestClient,
+) -> None:
+    health_response = client.get("/health")
+    metrics_response = client.get("/metrics")
+
+    assert health_response.status_code == 200
+    assert metrics_response.status_code == 200
+    assert 'path="/health"' in metrics_response.text
+    assert 'method="GET"' in metrics_response.text
+    assert 'status_code="200"' in metrics_response.text
