@@ -1,9 +1,12 @@
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from time import perf_counter
 from typing import Annotated
+from uuid import uuid4
 
-from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response, status
+from sqlalchemy import text
 from sqlmodel import Session, select
 
 from tit_stream.database import create_database, get_session
@@ -13,8 +16,6 @@ from tit_stream.schemas import (
     TelemetryEventCreate,
     TelemetryEventUpdate,
 )
-
-app = FastAPI()
 
 configure_logging()
 
@@ -34,6 +35,35 @@ app = FastAPI(
 )
 
 SessionDependency = Annotated[Session, Depends(get_session)]
+
+
+@app.middleware("http")
+async def log_requests(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
+    request_id = request.headers.get(
+        "X-Request-ID",
+        str(uuid4()),
+    )
+    start_time = perf_counter()
+
+    response = await call_next(request)
+
+    duration_ms = (perf_counter() - start_time) * 1000
+
+    response.headers["X-Request-ID"] = request_id
+
+    logger.info(
+        "Request completed method=%s path=%s status_code=%s duration_ms=%.2f request_id=%s",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+        request_id,
+    )
+
+    return response
 
 
 def find_event_or_404(
@@ -176,3 +206,21 @@ def delete_event(
 @app.get("/health", tags=["Health"])
 def health_check() -> dict[str, str]:
     return {"status": "healthy"}
+
+
+@app.get("/ready", tags=["Health"])
+def readiness_check(
+    session: Session = Depends(get_session),
+) -> dict[str, str]:
+    try:
+        session.connection().execute(text("SELECT 1"))
+    except Exception as error:
+        raise HTTPException(
+            status_code=503,
+            detail="Database unavailable",
+        ) from error
+
+    return {
+        "status": "ready",
+        "database": "connected",
+    }

@@ -160,3 +160,57 @@ def test_health_check(
 
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
+
+
+def test_readiness_check(
+    client: TestClient,
+) -> None:
+    response = client.get("/ready")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ready",
+        "database": "connected",
+    }
+
+
+def test_response_contains_request_id(
+    client: TestClient,
+) -> None:
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert "X-Request-ID" in response.headers
+    assert response.headers["X-Request-ID"] != ""
+
+
+def test_existing_request_id_is_preserved(
+    client: TestClient,
+) -> None:
+    request_id = "test-request-123"
+
+    response = client.get(
+        "/health",
+        headers={"X-Request-ID": request_id},
+    )
+
+    assert response.status_code == 200
+    assert response.headers["X-Request-ID"] == request_id
+
+
+def test_request_is_logged(
+    client: TestClient,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with caplog.at_level(logging.INFO):
+        response = client.get(
+            "/health",
+            headers={"X-Request-ID": "logging-test-123"},
+        )
+
+    assert response.status_code == 200
+    assert "Request completed" in caplog.text
+    assert "method=GET" in caplog.text
+    assert "path=/health" in caplog.text
+    assert "status_code=200" in caplog.text
+    assert "request_id=logging-test-123" in caplog.text
