@@ -1,0 +1,16 @@
+services:
+  telemetry-api:
+    build:
+      context: .
+    image: mkurd47/tit-stream-api:1.0
+    container_name: tit-stream-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite:////app/data/telemetry.db
+    volumes:
+      - telemetry-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  telemetry-data:

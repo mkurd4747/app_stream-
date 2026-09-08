@@ -1,0 +1,41 @@
+name: Terraform Check
+
+on:
+  push:
+    paths:
+      - "infra/aws/**"
+      - ".github/workflows/terraform.yml"
+
+  pull_request:
+    paths:
+      - "infra/aws/**"
+      - ".github/workflows/terraform.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: infra/aws
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "1.14.6"
+
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive
+
+      - name: Initialize Terraform
+        run: terraform init -backend=false -input=false
+
+      - name: Validate Terraform
+        run: terraform validate -no-color

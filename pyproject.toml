@@ -1,0 +1,19 @@
+[project]
+name = "tit_stream"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.141",
+    "sqlmodel>=0.0.42",
+    "uvicorn>=0.52",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

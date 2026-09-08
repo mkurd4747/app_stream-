@@ -1,0 +1,9 @@
+#requirment 
+pytest
+pytest-cov
+ruff
+mypy
+black 
+
+
+

@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf update -y
+dnf install -y docker
+systemctl enable --now docker
+
+docker volume create telemetry-data
+docker pull ${docker_image}
+docker rm -f tit-stream-api || true
+
+docker run -d \
+  --name tit-stream-api \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  -e DATABASE_URL=sqlite:////app/data/telemetry.db \
+  -v telemetry-data:/app/data \
+  ${docker_image}

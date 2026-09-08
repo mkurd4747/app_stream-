@@ -1,0 +1,17 @@
+
+gitignore
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+data/*.json
+data/*.csv
+guideline.md
+end
+telemetry.db
+htmlcov/
+*.pyc
+
+
