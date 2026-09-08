@@ -1,10 +1,11 @@
 """Create telemetry events table
 
 Revision ID: da4619e9de09
-Revises: 
+Revises:
 Create Date: 2026-09-03 14:11:22.823131
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -12,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'da4619e9de09'
+revision: str = "da4619e9de09"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
