@@ -8,7 +8,10 @@ class Settings(BaseSettings):
     app_version: str = "2.0.0"
     environment: str = "development"
     database_url: str = "sqlite:///telemetry.db"
-    api_key: str = "development-only-key"
+    oauth_client_id: str = "telemetry-client"
+    oauth_client_secret: str = "development-only-secret"
+    oauth_signing_key: str = "development-only-signing-key"
+    oauth_token_expire_minutes: int = 30
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -12,3 +12,9 @@ class TelemetryEventRecord(SQLModel, table=True):
     message: str
     context: str
     flagged: bool = Field(default=False, index=True)
+    object_id: str | None = Field(default=None, index=True)
+    latitude: float | None = None
+    longitude: float | None = None
+    altitude_m: float | None = None
+    grid: str | None = None
+    confidence: float | None = None

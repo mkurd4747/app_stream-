@@ -12,14 +12,14 @@ def test_create_valid_schema() -> None:
         timestamp="2026-09-03T10:00:00Z",
         event_type="login",
         source="server-1",
-        classification="warning",
+        classification="SECRET",
         message="Failed login",
         context="authentication",
         flagged=True,
     )
 
     assert event.source == "server-1"
-    assert event.classification == "warning"
+    assert event.classification == "SECRET"
     assert event.flagged is True
 
 
@@ -29,7 +29,7 @@ def test_reject_empty_timestamp() -> None:
             timestamp="",
             event_type="login",
             source="server-1",
-            classification="warning",
+            classification="SECRET",
             message="Failed login",
             context="authentication",
             flagged=True,
@@ -42,7 +42,7 @@ def test_reject_blank_source() -> None:
             timestamp="2026-09-03T10:00:00Z",
             event_type="login",
             source="   ",
-            classification="warning",
+            classification="SECRET",
             message="Failed login",
             context="authentication",
             flagged=True,
@@ -55,7 +55,7 @@ def test_reject_invalid_classification() -> None:
             timestamp="2026-09-03T10:00:00Z",
             event_type="login",
             source="server-1",
-            classification="danger",  # type: ignore[arg-type]
+            classification="danger",
             message="Failed login",
             context="authentication",
             flagged=True,
@@ -64,11 +64,11 @@ def test_reject_invalid_classification() -> None:
 
 def test_update_allows_partial_data() -> None:
     update = TelemetryEventUpdate(
-        classification="critical",
+        classification="TOP_SECRET",
     )
 
     changes = update.model_dump(exclude_unset=True)
 
     assert changes == {
-        "classification": "critical",
+        "classification": "TOP_SECRET",
     }

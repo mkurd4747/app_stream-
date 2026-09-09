@@ -1,9 +1,10 @@
-#requirment 
+#requirment
 pytest
 pytest-cov
 ruff
 mypy
-black 
+black
+httpx
 
 
 

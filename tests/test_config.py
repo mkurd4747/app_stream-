@@ -17,11 +17,11 @@ def test_settings_from_environment(
         "testing",
     )
     monkeypatch.setenv(
-        "TELEMETRY_STREAM_API_KEY",
-        "test-api-key",
+        "TELEMETRY_STREAM_OAUTH_CLIENT_SECRET",
+        "test-client-secret",
     )
 
     settings = Settings(_env_file=None)
 
     assert settings.environment == "testing"
-    assert settings.api_key == "test-api-key"
+    assert settings.oauth_client_secret == "test-client-secret"
