@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Name used for AWS resource tags and names."
   type        = string
-  default     = "tit-stream-api"
+  default     = "telemetry-stream-api"
 }
 
 variable "environment" {
@@ -35,5 +35,5 @@ variable "allowed_cidr" {
 variable "docker_image" {
   description = "Public Docker Hub image deployed on EC2."
   type        = string
-  default     = "mkurd47/tit-stream-api:1.0"
+  default     = "mkurd47/telemetry-stream-api:1.0"
 }

@@ -23,11 +23,11 @@ from prometheus_client import (
 from sqlalchemy import text
 from sqlmodel import Session, select
 
-from tit_stream.config import get_settings
-from tit_stream.database import create_database, get_session
-from tit_stream.database_models import TelemetryEventRecord
-from tit_stream.logging_config import configure_logging
-from tit_stream.schemas import (
+from telemetry_stream.config import get_settings
+from telemetry_stream.database import create_database, get_session
+from telemetry_stream.database_models import TelemetryEventRecord
+from telemetry_stream.logging_config import configure_logging
+from telemetry_stream.schemas import (
     TelemetryEventCreate,
     TelemetryEventUpdate,
 )
@@ -37,13 +37,13 @@ configure_logging()
 logger = logging.getLogger(__name__)
 
 REQUEST_COUNT = Counter(
-    "tit_stream_http_requests_total",
+    "telemetry_stream_http_requests_total",
     "Total number of HTTP requests",
     ["method", "path", "status_code"],
 )
 
 REQUEST_DURATION = Histogram(
-    "tit_stream_http_request_duration_seconds",
+    "telemetry_stream_http_request_duration_seconds",
     "HTTP request duration in seconds",
     ["method", "path"],
 )

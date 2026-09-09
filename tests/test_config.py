@@ -1,4 +1,4 @@
-from tit_stream.config import Settings
+from telemetry_stream.config import Settings
 
 
 def test_default_settings() -> None:
@@ -13,11 +13,11 @@ def test_settings_from_environment(
     monkeypatch,
 ) -> None:
     monkeypatch.setenv(
-        "TIT_STREAM_ENVIRONMENT",
+        "TELEMETRY_STREAM_ENVIRONMENT",
         "testing",
     )
     monkeypatch.setenv(
-        "TIT_STREAM_API_KEY",
+        "TELEMETRY_STREAM_API_KEY",
         "test-api-key",
     )
 

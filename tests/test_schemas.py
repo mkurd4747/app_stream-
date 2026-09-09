@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from tit_stream.schemas import (
+from telemetry_stream.schemas import (
     TelemetryEventCreate,
     TelemetryEventUpdate,
 )

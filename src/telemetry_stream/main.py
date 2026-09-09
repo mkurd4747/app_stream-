@@ -1,5 +1,5 @@
-from tit_stream.collector import TelemetryCollector
-from tit_stream.models import TelemetryEvent
+from telemetry_stream.collector import TelemetryCollector
+from telemetry_stream.models import TelemetryEvent
 
 event_1 = TelemetryEvent(
     "2026-08-24T12:00:00Z",

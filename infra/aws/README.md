@@ -1,7 +1,7 @@
 # AWS-ready telemetry deployment
 
 This Terraform configuration prepares a small learning deployment of
-`mkurd47/tit-stream-api:1.0` on one Amazon Linux 2023 EC2 instance.
+`mkurd47/telemetry-stream-api:1.0` on one Amazon Linux 2023 EC2 instance.
 
 It creates:
 
@@ -28,7 +28,7 @@ design. SQLite and a single EC2 instance remain single points of failure.
 2. Create an AWS budget or billing alert.
 3. Review current EC2, EBS, public IPv4, and data-transfer pricing.
 4. Confirm the account has a default VPC and default subnets.
-5. Confirm `mkurd47/tit-stream-api:1.0` is public and pulls successfully.
+5. Confirm `mkurd47/telemetry-stream-api:1.0` is public and pulls successfully.
 6. Determine your current public IPv4 address and express it as `/32`.
 
 Do not store AWS access keys in any Terraform file.
@@ -89,7 +89,7 @@ Manager. On the instance, inspect the application with:
 
 ```bash
 sudo docker ps
-sudo docker logs tit-stream-api
+sudo docker logs telemetry-stream-api
 ```
 
 ## Destroy to stop ongoing resource charges

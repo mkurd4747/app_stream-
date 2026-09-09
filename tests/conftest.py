@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
-from tit_stream.database_api import app, get_session
+from telemetry_stream.database_api import app, get_session
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 from collections import deque
 
-from tit_stream.models import TelemetryEvent
+from telemetry_stream.models import TelemetryEvent
 
 event_1 = TelemetryEvent(
     timestamp="2026-09-02T09:00:00Z",

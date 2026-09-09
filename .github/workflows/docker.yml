@@ -28,5 +28,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          tags: mkurd47/tit-stream-api:test
+          tags: mkurd47/telemetry-stream-api:test
           

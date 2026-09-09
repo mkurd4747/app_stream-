@@ -223,8 +223,8 @@ def test_metrics_endpoint(
 
     assert response.status_code == 200
     assert "text/plain" in response.headers["content-type"]
-    assert "tit_stream_http_requests_total" in response.text
-    assert "tit_stream_http_request_duration_seconds" in response.text
+    assert "telemetry_stream_http_requests_total" in response.text
+    assert "telemetry_stream_http_request_duration_seconds" in response.text
 
 
 def test_health_request_is_recorded_in_metrics(

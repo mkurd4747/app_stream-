@@ -1,6 +1,6 @@
-# app_stream-
+# telemetry-stream-api
 This is an app stream 
-[![Database Migrations](https://github.com/mkurd4747/app_stream-/actions/workflows/database-migrations.yml/badge.svg)](https://github.com/mkurd4747/app_stream-/actions/workflows/database-migrations.yml)
+[![Database Migrations](https://github.com/mkurd4747/telemetry-stream-api/actions/workflows/database-migrations.yml/badge.svg)](https://github.com/mkurd4747/telemetry-stream-api/actions/workflows/database-migrations.yml)
 ## CI/CD
 
 This project uses GitHub Actions to:
@@ -16,7 +16,7 @@ This project uses GitHub Actions to:
 Docker image:
 
 ```text
-mkurd47/tit-stream-api
+mkurd47/telemetry-stream-api
 
 ## Monitoring
 

@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from tit_stream.collector import TelemetryCollector
-from tit_stream.models import TelemetryEvent
+from telemetry_stream.collector import TelemetryCollector
+from telemetry_stream.models import TelemetryEvent
 
 
 def test_create_valid_event() -> None:

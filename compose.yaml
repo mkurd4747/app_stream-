@@ -2,8 +2,8 @@ services:
   telemetry-api:
     build:
       context: .
-    image: mkurd47/tit-stream-api:1.0
-    container_name: tit-stream-api
+    image: mkurd47/telemetry-stream-api:1.0
+    container_name: telemetry-stream-api
     ports:
       - "8000:8000"
     environment:

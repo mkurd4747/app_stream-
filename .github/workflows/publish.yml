@@ -35,5 +35,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            mkurd47/tit-stream-api:${{ inputs.version }}
-            mkurd47/tit-stream-api:latest
+            mkurd47/telemetry-stream-api:${{ inputs.version }}
+            mkurd47/telemetry-stream-api:latest

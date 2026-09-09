@@ -14,4 +14,4 @@ COPY src ./src
 
 EXPOSE 8000
 
-CMD ["fastapi", "run", "src/tit_stream/database_api.py", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["fastapi", "run", "src/telemetry_stream/database_api.py", "--host", "0.0.0.0", "--port", "8000"]

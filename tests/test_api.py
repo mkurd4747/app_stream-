@@ -3,7 +3,7 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 
-from tit_stream.api import (
+from telemetry_stream.api import (
     app,
     collector,
     event_1,

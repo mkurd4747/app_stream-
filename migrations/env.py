@@ -3,8 +3,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from tit_stream.config import get_settings
-from tit_stream.database_models import TelemetryEventRecord
+from telemetry_stream.config import get_settings
+from telemetry_stream.database_models import TelemetryEventRecord
 
 config = context.config
 

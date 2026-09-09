@@ -3,8 +3,8 @@ from typing import Literal
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, field_validator
 
-from tit_stream.collector import TelemetryCollector
-from tit_stream.models import TelemetryEvent
+from telemetry_stream.collector import TelemetryCollector
+from telemetry_stream.models import TelemetryEvent
 
 app = FastAPI(
     title="Telemetry Stream API",

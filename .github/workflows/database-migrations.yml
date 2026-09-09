@@ -5,9 +5,9 @@ on:
     paths:
       - "migrations/**"
       - "alembic.ini"
-      - "src/tit_stream/database.py"
-      - "src/tit_stream/database_models.py"
-      - "src/tit_stream/config.py"
+      - "src/telemetry_stream/database.py"
+      - "src/telemetry_stream/database_models.py"
+      - "src/telemetry_stream/config.py"
       - "requirements.txt"
       - "pyproject.toml"
       - ".github/workflows/database-migrations.yml"
@@ -16,9 +16,9 @@ on:
     paths:
       - "migrations/**"
       - "alembic.ini"
-      - "src/tit_stream/database.py"
-      - "src/tit_stream/database_models.py"
-      - "src/tit_stream/config.py"
+      - "src/telemetry_stream/database.py"
+      - "src/telemetry_stream/database_models.py"
+      - "src/telemetry_stream/config.py"
       - "requirements.txt"
       - "pyproject.toml"
       - ".github/workflows/database-migrations.yml"
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TIT_STREAM_DATABASE_URL: sqlite:///migration_ci.db
+      TELEMETRY_STREAM_DATABASE_URL: sqlite:///migration_ci.db
       PYTHONPATH: src
 
     steps:

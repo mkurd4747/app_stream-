@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from tit_stream.models import TelemetryEvent
+from telemetry_stream.models import TelemetryEvent
 
 
 class TelemetryCollector:
