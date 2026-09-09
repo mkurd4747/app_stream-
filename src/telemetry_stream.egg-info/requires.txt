@@ -1,0 +1,4 @@
+fastapi>=0.141
+prometheus-client>=0.21
+sqlmodel>=0.0.42
+uvicorn>=0.52
