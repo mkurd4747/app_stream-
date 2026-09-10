@@ -5,6 +5,8 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.141",
     "prometheus-client>=0.21",
+    "pydantic-settings>=2.6",
+    "python-multipart>=0.0.20",
     "pyjwt>=2.9",
     "sqlmodel>=0.0.42",
     "uvicorn>=0.52",

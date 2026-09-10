@@ -3,7 +3,6 @@ README.md
 pyproject.toml
 src/telemetry_stream/__init__.py
 src/telemetry_stream/allowed_classifications.py
-src/telemetry_stream/api.py
 src/telemetry_stream/collector.py
 src/telemetry_stream/config.py
 src/telemetry_stream/database.py
@@ -22,7 +21,6 @@ src/telemetry_stream.egg-info/SOURCES.txt
 src/telemetry_stream.egg-info/dependency_links.txt
 src/telemetry_stream.egg-info/requires.txt
 src/telemetry_stream.egg-info/top_level.txt
-tests/test_api.py
 tests/test_collector_algorithms.py
 tests/test_config.py
 tests/test_database_api.py

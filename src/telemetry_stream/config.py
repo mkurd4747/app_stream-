@@ -1,6 +1,13 @@
 from functools import lru_cache
 
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class OAuthClient(BaseModel):
+    client_id: str
+    client_secret: str
+    role: str
 
 
 class Settings(BaseSettings):
@@ -12,6 +19,7 @@ class Settings(BaseSettings):
     oauth_client_secret: str = "development-only-secret"
     oauth_signing_key: str = "development-only-signing-key"
     oauth_token_expire_minutes: int = 30
+    oauth_clients: list[OAuthClient] = []
 
     model_config = SettingsConfigDict(
         env_file=".env",

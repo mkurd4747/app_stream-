@@ -30,7 +30,7 @@ from sqlalchemy import text
 from sqlmodel import Session, select
 
 from telemetry_stream.allowed_classifications import allowed_classifications
-from telemetry_stream.config import get_settings
+from telemetry_stream.config import OAuthClient, get_settings
 from telemetry_stream.database import create_database, get_session
 from telemetry_stream.database_models import TelemetryEventRecord
 from telemetry_stream.logging_config import configure_logging
@@ -81,6 +81,11 @@ TOKEN_ALGORITHM = "HS256"
 PROTECTED_CLASSIFICATIONS = set(allowed_classifications)
 HIGHEST_SENSITIVITY_CLASSIFICATION = "TOP_SECRET"
 
+ROLE_PERMISSIONS: dict[str, set[str]] = {
+    "admin": {"create", "read", "update", "delete"},
+    "editor": {"read", "update"},
+}
+
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -88,17 +93,56 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 
-def create_access_token(client_id: str) -> tuple[str, int]:
+def find_client(client_id: str, client_secret: str) -> OAuthClient | None:
+    candidates = [
+        OAuthClient(
+            client_id=settings.oauth_client_id,
+            client_secret=settings.oauth_client_secret,
+            role="admin",
+        ),
+        *settings.oauth_clients,
+    ]
+
+    for candidate in candidates:
+        id_matches = secrets.compare_digest(client_id, candidate.client_id)
+        secret_matches = secrets.compare_digest(client_secret, candidate.client_secret)
+
+        if id_matches and secret_matches:
+            return candidate
+
+    return None
+
+
+def create_access_token(client_id: str, role: str) -> tuple[str, int]:
     expires_in = timedelta(minutes=settings.oauth_token_expire_minutes)
     expires_at = datetime.now(UTC) + expires_in
 
     access_token = jwt.encode(
-        {"sub": client_id, "exp": expires_at},
+        {"sub": client_id, "role": role, "exp": expires_at},
         settings.oauth_signing_key,
         algorithm=TOKEN_ALGORITHM,
     )
 
     return access_token, int(expires_in.total_seconds())
+
+
+def decode_token(credentials: HTTPAuthorizationCredentials | None) -> dict:
+    unauthorized = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="A valid access token is required",
+    )
+
+    if credentials is None:
+        raise unauthorized
+
+    try:
+        return jwt.decode(
+            credentials.credentials,
+            settings.oauth_signing_key,
+            algorithms=[TOKEN_ALGORITHM],
+        )
+    except jwt.InvalidTokenError as error:
+        raise unauthorized from error
 
 
 def verify_classification_access(
@@ -108,22 +152,21 @@ def verify_classification_access(
     if classification not in PROTECTED_CLASSIFICATIONS:
         return
 
-    unauthorized = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=f"A valid access token is required for '{classification}' events",
-    )
+    decode_token(credentials)
 
-    if credentials is None:
-        raise unauthorized
 
-    try:
-        jwt.decode(
-            credentials.credentials,
-            settings.oauth_signing_key,
-            algorithms=[TOKEN_ALGORITHM],
+def require_permission(
+    operation: str,
+    credentials: HTTPAuthorizationCredentials | None,
+) -> None:
+    payload = decode_token(credentials)
+    role = payload.get("role", "admin")
+
+    if operation not in ROLE_PERMISSIONS.get(role, set()):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Role '{role}' is not permitted to {operation} events",
         )
-    except jwt.InvalidTokenError as error:
-        raise unauthorized from error
 
 
 @app.post("/oauth/token", response_model=TokenResponse, tags=["Auth"])
@@ -138,19 +181,15 @@ def issue_token(
             detail="Only the client_credentials grant type is supported",
         )
 
-    valid_client_id = secrets.compare_digest(client_id, settings.oauth_client_id)
-    valid_client_secret = secrets.compare_digest(
-        client_secret,
-        settings.oauth_client_secret,
-    )
+    client = find_client(client_id, client_secret)
 
-    if not (valid_client_id and valid_client_secret):
+    if client is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid client credentials",
         )
 
-    access_token, expires_in = create_access_token(client_id)
+    access_token, expires_in = create_access_token(client.client_id, client.role)
 
     return TokenResponse(access_token=access_token, expires_in=expires_in)
 
@@ -302,6 +341,7 @@ def create_event(
     credentials: BearerCredentials = None,
 ) -> TelemetryEventRecord:
     verify_classification_access(event_data.classification, credentials)
+    require_permission("create", credentials)
 
     event = TelemetryEventRecord(
         **event_data.model_dump(),
@@ -341,6 +381,8 @@ def read_events(
         for protected_classification in PROTECTED_CLASSIFICATIONS:
             verify_classification_access(protected_classification, credentials)
 
+    require_permission("read", credentials)
+
     statement = select(TelemetryEventRecord)
 
     if source is not None:
@@ -375,6 +417,7 @@ def read_event(
     event = find_event_or_404(event_id, session)
 
     verify_classification_access(event.classification, credentials)
+    require_permission("read", credentials)
 
     return event
 
@@ -397,6 +440,8 @@ def update_event(
 
     if "classification" in updates:
         verify_classification_access(updates["classification"], credentials)
+
+    require_permission("update", credentials)
 
     for field, value in updates.items():
         setattr(event, field, value)
@@ -433,6 +478,7 @@ def delete_event(
         )
 
     verify_classification_access(event.classification, credentials)
+    require_permission("delete", credentials)
 
     session.delete(event)
     session.commit()
